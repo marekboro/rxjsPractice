@@ -3,6 +3,8 @@ import { share } from 'rxjs/operators'
 import { fromEvent } from 'rxjs'
 import { Subject } from 'rxjs'
 import { ReplaySubject } from 'rxjs';
+import { AsyncSubject } from 'rxjs'; 
+
 
 
 // var observable = new Observable(function subscribe(observer:any){
@@ -102,36 +104,101 @@ function addItem2(val: any) {
 / - share work between ALL subscribers
 
 * REPLAY-SUBJECT:
- * A variant of Subject that "replays" or emits old values to new subscribers.
- * It buffers a set number of values and will emit those values immediately to
- * any new subscribers in addition to emitting new values to existing subscribers.
+    * A variant of Subject that "replays" or emits old values to new subscribers.
+    * It buffers a set number of values and will emit those values immediately to
+    * any new subscribers in addition to emitting new values to existing subscribers.
 
 * BEHAVIOR-SUBJECT:
- * A variant of Subject that requires an initial value and emits its current
- * value whenever it is subscribed to.
+    * A variant of Subject that requires an initial value and emits its current
+    * value whenever it is subscribed to.
+* ASYNC SUBJECT
+    * A variant of Subject that only emits a value when it completes. It will emit
+    * its latest value to all its observers on completion.
 
 */
 
 //---
+
 const subjectMissed = new Subject();
 subjectMissed.next('missed message BEFORE subscription');
 subjectMissed.subscribe(v => addItem(v));
 subjectMissed.next('S U B J E C T: hello AFTER subscription!');
+
 //----
-const replaySubject = new ReplaySubject();
+
+const replaySubject = new ReplaySubject(); 
+const replaySubjectOne = new ReplaySubject(1); // YOU CAN SPECIFY how many last 2 events it will 
+const replaySubjectTwo = new ReplaySubject(5,90); // YOU CAN SPECIFY how many last 2 events and timeframe from start of emission
 replaySubject.next('R-E-P-L-A-Y SUBJECT: BEFORE subscription');
 var a = replaySubject.subscribe(v => addItem("A --> " + v));
 replaySubject.next('R-E-P-L-A-Y SUBJECT: AFTER subscription A');
 var b = replaySubject.subscribe(v => addItem("B --> " + v));
 replaySubject.next('R-E-P-L-A-Y SUBJECT: AFTER subscription B');
-//---- A, AA, B, BA, AB, BB 
+
+//---- A, AA, B, BA, AB, BB  
+
+
+// ------
+replaySubjectOne.next("RL1-b4-Sub 1");
+replaySubjectOne.next("RL1-b4-Sub 2");
+replaySubjectOne.next("RL1-b4-Sub 3");
+var rl1A = replaySubjectOne.subscribe(v => addItem("rl1A --> " + v));
+replaySubjectOne.next("RL1-after-Sub1 1");
+replaySubjectOne.next("RL1-after-Sub1 2");
+replaySubjectOne.next("RL1-after-Sub1 3");
+var rl1B= replaySubjectOne.subscribe(v => addItem("rl1B --> " + v));
+replaySubjectOne.next("RL1-after-Sub2 1");
+replaySubjectOne.next("RL1-after-Sub2 2");
+replaySubjectOne.next("RL1-after-Sub2 3");
+// ------
+
+var rlFive200 = replaySubjectTwo.subscribe(v => addItem("rlFive200 --> " + v));
+var i = 1;
+
+var int = setInterval(() =>replaySubjectTwo.next(i++),100);
+var rlFive200v2;
+setTimeout(() => {
+    rlFive200v2 = replaySubjectTwo.subscribe(v => addItem("rlFive200v2 --> " + v))
+},500)
+
+setTimeout(() => {
+    rlFive200v2 = replaySubjectTwo.unsubscribe();
+},2010)
+
+// ---------
 
 const behaviorSubject = new BehaviorSubject(
-    'B.E.H.A.V.I.O.R Subj: Before sub'
+                        'B.E.H.A.V.I.O.R Subj: Before C sub'
 );
 var c = behaviorSubject.subscribe(v => addItem("C ==> " + v))
+behaviorSubject.next(   'B.E.H.A.V.I.O.R Subj: AFTER C SUB, but before D SUB');
 var d = behaviorSubject.subscribe(v => addItem("D ==> " + v))
-behaviorSubject.next('B.E.H.A.V.I.O.R Subj: AFTER SUB');
+behaviorSubject.next(   'B.E.H.A.V.I.O.R Subj: AFTER D SUB');
+
+//---- 
+
+
+const asyncSubject = new AsyncSubject()
+
+asyncSubject.subscribe(
+  data => addItem(" <><><><> ASYNC ob 1 = " + data ),
+  () => addItem( " <><><><> ASYNC C O M P L E T E")
+)
+var j =1;
+var jnt = setInterval(() => asyncSubject.next(j++),100)
+
+
+
+setTimeout(() => {
+    var as2obs = asyncSubject.subscribe(
+        data => addItem(" <><><><> ASYNC ob 2 = " + data )
+        )
+    asyncSubject.complete(); // ! Completion needed for emission. ! 
+},500)
+
+//
+
+
 
 
 
