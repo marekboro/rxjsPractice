@@ -1,23 +1,17 @@
-import { BehaviorSubject, from, Observable } from 'rxjs'
-import { share,map,pluck } from 'rxjs/operators'
-import { fromEvent } from 'rxjs'
-import { Subject } from 'rxjs'
-import { ReplaySubject } from 'rxjs';
-import { AsyncSubject } from 'rxjs'; 
-import { merge } from 'rxjs'
-
+import { AsyncSubject, ReplaySubject, fromEvent, interval, BehaviorSubject, from, Observable, merge, Subject } from 'rxjs';
+import { share, map, pluck, skipUntil } from 'rxjs/operators'
 
 
 // var observable = new Observable(function subscribe(observer:any){
 //     observer.next('Hey there, im an emition from an observable being observed')  // EMITTING A VALUE! use observer.next. 
 // } );
 var observable = new Observable((observer: any) => {    // This is a COLD OBSERVABLE - its producer is the function  in YELLOW () brackets, as this is what emitts these values/events.
-                                                        // "its observer whose producer is activated only once a subscription has been created" 
-                                                        // observable is HOT when the producer is emitting  value outside of the ebservable.
+    // "its observer whose producer is activated only once a subscription has been created" 
+    // observable is HOT when the producer is emitting  value outside of the ebservable.
     try {
         observer.next('Hey there, im an emission from an observable being observed');  // EMITTING A VALUE! use observer.next. 
         observer.next('How are you');  // EMITTING A VALUE! use observer.next. 
-        setInterval( ()=> {observer.next('I am OK')}, 2000 )
+        setInterval(() => { observer.next('I am OK') }, 2000)
         // observer.complete();
         // observer.next('this will not send');
     }
@@ -25,7 +19,7 @@ var observable = new Observable((observer: any) => {    // This is a COLD OBSERV
         observer.error(err);
     }
 
-//! SWITCH which line is commented out to make the Subscriber2 a WARM / HOT observable. 
+    //! SWITCH which line is commented out to make the Subscriber2 a WARM / HOT observable. 
 });
 // }).pipe(share()) ;
 //! TRULY HOT observbls would be MOUSE movememts.
@@ -36,7 +30,7 @@ var observable = new Observable((observer: any) => {    // This is a COLD OBSERV
 // obseervers are a set of callbacks that accept notifications coming from the observable: next,error,complete 
 var observer = observable.subscribe(
     (x: any) => addItemOld(x)
-    
+
 )
 
 ////
@@ -50,13 +44,13 @@ var observer = observable.subscribe(
 //   observer.unsubscribe()
 // },6005)
 ////
-setTimeout( () => {
-  var observer2 = observable.subscribe(
-      (x:any)=>addItemOld('Subscriber 2 '+ x)
-  )
-},1000)
+setTimeout(() => {
+    var observer2 = observable.subscribe(
+        (x: any) => addItemOld('Subscriber 2 ' + x)
+    )
+}, 1000)
 
- 
+
 
 function addItemOld(val: any) {
     // var node = document.createElement("li");
@@ -65,16 +59,16 @@ function addItemOld(val: any) {
     // document.getElementById("output").appendChild(node);
 }
 
-var observableHot = fromEvent(document,'mousemove')
+var observableHot = fromEvent(document, 'mousemove')
 
 setTimeout(() => {
-  var subscription = observableHot.subscribe(
-      (x:any)=> addItem2(x)
-  )
-  setTimeout(() => {
-    subscription.unsubscribe()
-  },26)
-},2000)
+    var subscription = observableHot.subscribe(
+        (x: any) => addItem2(x)
+    )
+    setTimeout(() => {
+        subscription.unsubscribe()
+    }, 26)
+}, 2000)
 
 
 function addItem2(val: any) {
@@ -140,9 +134,9 @@ subjectMissed.next('S U B J E C T: hello AFTER subscription!');
 
 //----
 
-const replaySubject = new ReplaySubject(); 
+const replaySubject = new ReplaySubject();
 const replaySubjectOne = new ReplaySubject(1); // YOU CAN SPECIFY how many last 2 events it will 
-const replaySubjectTwo = new ReplaySubject(5,90); // YOU CAN SPECIFY how many last 2 events and timeframe from start of emission
+const replaySubjectTwo = new ReplaySubject(5, 90); // YOU CAN SPECIFY how many last 2 events and timeframe from start of emission
 replaySubject.next('R-E-P-L-A-Y SUBJECT: BEFORE subscription');
 var a = replaySubject.subscribe(v => addItem("A --> " + v));
 replaySubject.next('R-E-P-L-A-Y SUBJECT: AFTER subscription A');
@@ -160,7 +154,7 @@ var rl1A = replaySubjectOne.subscribe(v => addItem("rl1A --> " + v));
 replaySubjectOne.next("RL1-after-Sub1 1");
 replaySubjectOne.next("RL1-after-Sub1 2");
 replaySubjectOne.next("RL1-after-Sub1 3");
-var rl1B= replaySubjectOne.subscribe(v => addItem("rl1B --> " + v));
+var rl1B = replaySubjectOne.subscribe(v => addItem("rl1B --> " + v));
 replaySubjectOne.next("RL1-after-Sub2 1");
 replaySubjectOne.next("RL1-after-Sub2 2");
 replaySubjectOne.next("RL1-after-Sub2 3");
@@ -169,25 +163,25 @@ replaySubjectOne.next("RL1-after-Sub2 3");
 var rlFive200 = replaySubjectTwo.subscribe(v => addItem("rlFive200 --> " + v));
 var i = 1;
 
-var int = setInterval(() =>replaySubjectTwo.next(i++),100);
+var int = setInterval(() => replaySubjectTwo.next(i++), 100);
 var rlFive200v2;
 setTimeout(() => {
     rlFive200v2 = replaySubjectTwo.subscribe(v => addItem("rlFive200v2 --> " + v))
-},500)
+}, 500)
 
 setTimeout(() => {
     rlFive200v2 = replaySubjectTwo.unsubscribe();
-},2010)
+}, 2010)
 
 // ---------
 
 const behaviorSubject = new BehaviorSubject(
-                        'B.E.H.A.V.I.O.R Subj: Before C sub'
+    'B.E.H.A.V.I.O.R Subj: Before C sub'
 );
 var c = behaviorSubject.subscribe(v => addItem("C ==> " + v))
-behaviorSubject.next(   'B.E.H.A.V.I.O.R Subj: AFTER C SUB, but before D SUB');
+behaviorSubject.next('B.E.H.A.V.I.O.R Subj: AFTER C SUB, but before D SUB');
 var d = behaviorSubject.subscribe(v => addItem("D ==> " + v))
-behaviorSubject.next(   'B.E.H.A.V.I.O.R Subj: AFTER D SUB');
+behaviorSubject.next('B.E.H.A.V.I.O.R Subj: AFTER D SUB');
 
 //---- 
 
@@ -195,20 +189,20 @@ behaviorSubject.next(   'B.E.H.A.V.I.O.R Subj: AFTER D SUB');
 const asyncSubject = new AsyncSubject()
 
 asyncSubject.subscribe(
-  data => addItem(" <><><><> ASYNC ob 1 = " + data ),
-  () => addItem( " <><><><> ASYNC C O M P L E T E")
+    data => addItem(" <><><><> ASYNC ob 1 = " + data),
+    () => addItem(" <><><><> ASYNC C O M P L E T E")
 )
-var j =1;
-var jnt = setInterval(() => asyncSubject.next(j++),100)
+var j = 1;
+var jnt = setInterval(() => asyncSubject.next(j++), 100)
 
 
 
 setTimeout(() => {
     var as2obs = asyncSubject.subscribe(
-        data => addItem(" <><><><> ASYNC ob 2 = " + data )
-        )
+        data => addItem(" <><><><> ASYNC ob 2 = " + data)
+    )
     asyncSubject.complete(); // ! Completion needed for emission. ! 
-},500)
+}, 500)
 
 //
 
@@ -245,39 +239,59 @@ function addItem(val: any) {
     document.getElementById("output").appendChild(node);
 }
 
-var toMerge1 = new Observable((observer:any)=> {
+var toMerge1 = new Observable((observer: any) => {
     observer.next(" PING ")
 
 });
-var toMerge2 = new Observable((observer:any)=> {
+var toMerge2 = new Observable((observer: any) => {
     observer.next(" PONG ")
 
 });
 
-var merged = merge(toMerge1,toMerge2)
+var merged = merge(toMerge1, toMerge2)
 
-merged.subscribe((x:any) => 
-  addItem("MERGED ============ >>>>>>>> " +x)
+merged.subscribe((x: any) =>
+    addItem("MERGED ============ >>>>>>>> " + x)
 )
 
 var mapped = merged.pipe(
-    map((x:any) => 
-    x.toLowerCase())
+    map((x: any) =>
+        x.toLowerCase())
 )
 
-mapped.subscribe((x:any) => 
-addItem("Mapped:" + x)
+mapped.subscribe((x: any) =>
+    addItem("Mapped:" + x)
 )
 
 
 
 var toPluck = from([
-{first: 'Gary', last: 'Bussey', age: '75'},
-{first: 'Ben', last: 'Stiller', age: '50'},
-{first: 'Jack', last: 'Black', age: '47'},
-{first: 'Mark', last: 'Whalberg', age: '45'}
-]) 
+    { first: 'Gary', last: 'Bussey', age: '75' },
+    { first: 'Ben', last: 'Stiller', age: '50' },
+    { first: 'Jack', last: 'Black', age: '47' },
+    { first: 'Mark', last: 'Whalberg', age: '45' }
+])
 
-toPluck.pipe(pluck('first')).subscribe((x:any)=> 
-addItem("Plucked: "+ x)
+toPluck.pipe(pluck('first')).subscribe((x: any) =>
+    addItem("Plucked: " + x)
 )
+
+var obsToPracticeSkipUntil = new Observable((data: any) => {
+    var i = 1;
+    setInterval(() => {
+        data.next(i++)
+    },1000)
+});
+
+var subjToPracticeSkipUntil = new Subject;
+setTimeout(() => {
+    subjToPracticeSkipUntil.next("....")
+},3000)
+
+var skipped = obsToPracticeSkipUntil.pipe(skipUntil(subjToPracticeSkipUntil)).subscribe((x:any) => 
+addItem("Skipped until  -> " + x)
+)
+
+setTimeout(() => {
+    skipped.unsubscribe();
+},8000)
