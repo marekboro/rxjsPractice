@@ -1,9 +1,10 @@
 import { BehaviorSubject, from, Observable } from 'rxjs'
-import { share } from 'rxjs/operators'
+import { share,map,pluck } from 'rxjs/operators'
 import { fromEvent } from 'rxjs'
 import { Subject } from 'rxjs'
 import { ReplaySubject } from 'rxjs';
 import { AsyncSubject } from 'rxjs'; 
+import { merge } from 'rxjs'
 
 
 
@@ -114,8 +115,21 @@ function addItem2(val: any) {
 * ASYNC SUBJECT
     * A variant of Subject that only emits a value when it completes. It will emit
     * its latest value to all its observers on completion.
-
 */
+/**  
+ //! OPERATORS
+ /* 
+ * METHODS that are used on OBSERVABLES, which DO NOT CHANGE the observables, BUT RETURN a MODIFIED OBSERVABLE.
+ * these are PURE FUNCTIONS.! 
+ * 
+ * STATIC OPERATORS
+ * methods used to create observables, 
+ * 
+ * INSTANCE OPERATORS (Majority of cases)
+ *  methods on observable instances
+ */
+
+
 
 //---
 
@@ -230,3 +244,40 @@ function addItem(val: any) {
     node.appendChild(textnode);
     document.getElementById("output").appendChild(node);
 }
+
+var toMerge1 = new Observable((observer:any)=> {
+    observer.next(" PING ")
+
+});
+var toMerge2 = new Observable((observer:any)=> {
+    observer.next(" PONG ")
+
+});
+
+var merged = merge(toMerge1,toMerge2)
+
+merged.subscribe((x:any) => 
+  addItem("MERGED ============ >>>>>>>> " +x)
+)
+
+var mapped = merged.pipe(
+    map((x:any) => 
+    x.toLowerCase())
+)
+
+mapped.subscribe((x:any) => 
+addItem("Mapped:" + x)
+)
+
+
+
+var toPluck = from([
+{first: 'Gary', last: 'Bussey', age: '75'},
+{first: 'Ben', last: 'Stiller', age: '50'},
+{first: 'Jack', last: 'Black', age: '47'},
+{first: 'Mark', last: 'Whalberg', age: '45'}
+]) 
+
+toPluck.pipe(pluck('first')).subscribe((x:any)=> 
+addItem("Plucked: "+ x)
+)
